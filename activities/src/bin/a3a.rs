@@ -10,4 +10,16 @@
 // * Use an if..else block to determine which message to display
 // * Use the println macro to display messages to the terminal
 
-fn main() {}
+fn display_message(is_arriving: bool) {
+    if is_arriving {
+        println!("hello");
+    } else {
+        println!("goodbye");
+    }
+}
+
+fn main() {
+    let arriving_state: bool = true;
+
+    display_message(arriving_state);
+}

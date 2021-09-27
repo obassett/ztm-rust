@@ -10,4 +10,25 @@
 // * Use a match expression to determine which color
 //   name to print
 
-fn main() {}
+enum Color {
+    Red,
+    Blue,
+    Green,
+    Pink,
+}
+
+fn print_color(color: Color) {
+    let color_string = match color {
+        Color::Blue => "blue",
+        Color::Green => "green",
+        Color::Red => "red",
+        Color::Pink => "pink",
+    };
+    println!("{:?}", color_string);
+}
+
+fn main() {
+    let my_favourite_color = Color::Pink;
+
+    print_color(my_favourite_color);
+}

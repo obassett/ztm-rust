@@ -9,4 +9,30 @@
 // * Use an if..else if..else block to determine which message to display
 // * Use the println macro to display messages to the terminal
 
-fn main() {}
+fn check_value(value: i32) {
+    let limit = 5;
+
+    // Answer per above requirements
+
+    if value > limit {
+        println!(">{:?}", limit);
+    } else if value < limit {
+        println!("<{:?}", limit);
+    } else {
+        println!("={:?}", limit);
+    }
+
+    // Match is a better way of doing this
+
+    // match value {
+    //     i if i > limit => println!(">{:?}", limit),
+    //     i if i < limit => println!("<{:?}", limit),
+    //     limit => println!("={:?}", limit),
+    // }
+}
+
+fn main() {
+    let test_value: i32 = 5;
+
+    check_value(test_value)
+}

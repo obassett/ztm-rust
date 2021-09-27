@@ -1,3 +1,5 @@
+use core::num;
+
 // Topic: Vectors
 //
 // Requirements:
@@ -10,4 +12,14 @@
 // * Determine whether to print the number or print "thirty" inside the loop
 // * Use the .len() function to print the number of elements in a vector
 
-fn main() {}
+fn main() {
+    let my_vector = vec![10, 20, 30, 40];
+
+    for number in &my_vector {
+        match number {
+            30 => println!("thirty"),
+            _ => println!("{:?}", number),
+        }
+    }
+    println!("{:?}", my_vector.len());
+}

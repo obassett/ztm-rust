@@ -10,4 +10,8 @@
 
 fn main() {
     let data = vec![1, 2, 3, 4, 5];
+
+    for num in data.iter().map(|num| num * 3).filter(|num: &i32| num > &10) {
+        println!("{:?}", num)
+    }
 }
