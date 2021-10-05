@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name="activity"
+path="src/lib/activity.rs"
+
 
 [dependencies]
 rand = "*"
+chrono = "0.4.19"

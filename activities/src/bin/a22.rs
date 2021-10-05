@@ -22,13 +22,61 @@ fn clamp(n: i32, lower: i32, upper: i32) -> i32 {
 }
 
 /// Divides a and b.
-fn div(a: i32, b: i32) -> Option<i32> {
-    Some(a / b)
+fn div(a: f32, b: f32) -> f32 {
+    a / b
 }
 
 /// Takes two strings and places them immediately one after another.
 fn concat(first: &str, second: &str) -> String {
-    format!("{} {}", first, second)
+    format!("{}{}", first, second)
 }
 
 fn main() {}
+
+#[cfg(test)]
+mod test {
+    use crate::*;
+
+    // clap tests - 
+    /// Ensures n is >= lower and <= upper.
+    // fn clamp(n: i32, lower: i32, upper: i32) -> i32 {
+    #[test]
+    fn test_clamp_upper () {
+        let results = clamp(15, 11, 13);
+        let expected = 13;
+        assert_eq!(results, expected);
+    }
+
+    #[test]
+    fn test_clamp_lower () {
+        let results = clamp(10, 11, 13);
+        let expected = 11;
+        assert_eq!(results, expected);
+    }
+
+    // div test 
+
+    #[test]
+    fn test_div () {
+        let results = div(9.0, 3.0);
+        let expected = 3.0;
+        assert_eq!(results,expected,"9 / 3 should = 3")
+    }
+
+    #[test]
+    fn test_div_decimal () {
+        let results = div(10.0, 0.5);
+        let expected = 20.0;
+        assert_eq!(results, expected, "10 / 0.5 should = 20")
+
+    }
+
+    #[test]
+    fn test_concat_whitespace() {
+        let results = concat("eat ", "me");
+        let expected = String::from("eat me");
+        assert_eq!(results, expected, "I am delicious, my String should be 'eat me'.");
+
+    }
+
+} 
