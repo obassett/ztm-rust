@@ -19,4 +19,56 @@
 // * Use a function to calculate the total cost
 // * Process at least 3 different materials
 
-fn main() {}
+trait Material {
+    fn cost_per_sq_meter(&self) -> f64;
+    fn square_meters(&self) -> f64;
+    fn total_cost(&self) -> f64 {
+        self.cost_per_sq_meter() * self.square_meters()
+    }
+}
+
+struct Carpet(f64);
+impl Material for Carpet {
+    fn cost_per_sq_meter(&self) -> f64 {
+        10.0
+    }
+
+    fn square_meters(&self) -> f64 {
+        self.0
+    }
+}
+struct Tile(f64);
+impl Material for Tile {
+    fn cost_per_sq_meter(&self) -> f64 {
+        15.0
+    }
+
+    fn square_meters(&self) -> f64 {
+        self.0
+    }
+}
+struct Wood(f64);
+impl Material for Wood {
+    fn cost_per_sq_meter(&self) -> f64 {
+        20.0
+    }
+
+    fn square_meters(&self) -> f64 {
+        self.0
+    }
+}
+
+fn total_cost(material: &Vec<Box<dyn Material>>) -> f64 {
+    material.iter().map(|mat| mat.total_cost()).sum()
+}
+
+fn main() {
+    let bedroom_floor = Box::new(Carpet(64.0));
+    let bathroom_floor = Box::new(Tile(12.0));
+    let dining_floor = Box::new(Wood(30.0));
+
+    let my_materials: Vec<Box<dyn Material>> = vec![bedroom_floor, bathroom_floor, dining_floor];
+
+    let total = total_cost(&my_materials);
+    println!("Cost = ${}", total)
+}

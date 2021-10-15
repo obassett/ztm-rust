@@ -37,46 +37,46 @@ fn main() {}
 mod test {
     use crate::*;
 
-    // clap tests - 
+    // clap tests -
     /// Ensures n is >= lower and <= upper.
     // fn clamp(n: i32, lower: i32, upper: i32) -> i32 {
     #[test]
-    fn test_clamp_upper () {
+    fn test_clamp_upper() {
         let results = clamp(15, 11, 13);
         let expected = 13;
         assert_eq!(results, expected);
     }
 
     #[test]
-    fn test_clamp_lower () {
+    fn test_clamp_lower() {
         let results = clamp(10, 11, 13);
         let expected = 11;
         assert_eq!(results, expected);
     }
 
-    // div test 
+    // div test
 
     #[test]
-    fn test_div () {
+    fn test_div() {
         let results = div(9.0, 3.0);
         let expected = 3.0;
-        assert_eq!(results,expected,"9 / 3 should = 3")
+        assert_eq!(results, expected, "9 / 3 should = 3")
     }
 
     #[test]
-    fn test_div_decimal () {
-        let results = div(10.0, 0.5);
-        let expected = 20.0;
+    fn test_div_decimal() {
+        let results: f32 = div(10.0, 0.5);
+        let expected: f32 = 20.0;
         assert_eq!(results, expected, "10 / 0.5 should = 20")
-
     }
 
     #[test]
     fn test_concat_whitespace() {
         let results = concat("eat ", "me");
         let expected = String::from("eat me");
-        assert_eq!(results, expected, "I am delicious, my String should be 'eat me'.");
-
+        assert_eq!(
+            results, expected,
+            "I am delicious, my String should be 'eat me'."
+        );
     }
-
-} 
+}

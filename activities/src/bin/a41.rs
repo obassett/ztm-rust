@@ -18,9 +18,15 @@
 //   - parking_lot
 
 use crossbeam_channel::{unbounded, Receiver, Sender};
+use parking_lot::Mutex;
+use std::borrow::BorrowMut;
 use std::collections::VecDeque;
+use std::sync::Arc;
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
+
+// Counter Defininition
+type SharedJobCompletionCounter = Arc<Mutex<usize>>;
 
 /// Job given to workers.
 #[derive(Clone)]
@@ -57,7 +63,7 @@ impl Worker<Message> {
 }
 
 /// Create a new worker to receive jobs.
-fn spawn_worker() -> Worker<Message> {
+fn spawn_worker(job_counter: SharedJobCompletionCounter) -> Worker<Message> {
     let (tx, rx) = unbounded();
     // We clone the receiving end here so we have a copy to give to the
     // thread. This allows us to save the `tx` and `rx` into the Worker struct.
@@ -65,7 +71,7 @@ fn spawn_worker() -> Worker<Message> {
     // Spawn a new thread.
     let handle = thread::spawn(move || {
         // VecDeque allows us to get jobs in the order they arrive.
-        let mut jobs = VecDeque::new();
+        let mut jobs: VecDeque<Job> = VecDeque::new();
         // Outer loop is so we can have a brief delay when no
         // jobs are available.
         loop {
@@ -78,6 +84,8 @@ fn spawn_worker() -> Worker<Message> {
                         Job::Print(msg) => println!("{}", msg),
                         Job::Sum(lhs, rhs) => println!("{}+{}={}", lhs, rhs, lhs + rhs),
                     }
+                    let mut counter = job_counter.lock();
+                    *counter += 1;
                 }
                 // Check for messages on the channel.
                 if let Ok(msg) = rx_thread.try_recv() {
@@ -129,12 +137,14 @@ fn main() {
         Job::Sum(9, 1),
     ];
 
+    let job_counter: SharedJobCompletionCounter = Arc::new(Mutex::new(0));
+
     let jobs_sent = jobs.len();
 
     let mut workers = vec![];
     // Spawn 4 workers to process jobs.
     for _ in 0..4 {
-        let worker = spawn_worker();
+        let worker = spawn_worker(Arc::clone(&job_counter));
         workers.push(worker);
     }
 
@@ -160,4 +170,6 @@ fn main() {
     println!("Jobs sent: {}", jobs_sent);
 
     // print out the number of jobs completed here.
+    let job_count = job_counter.lock();
+    println!("Jobs Completed {}", job_count)
 }

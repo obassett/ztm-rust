@@ -22,8 +22,42 @@
 // * Utilize the `thiserror` crate for your error type
 // * Run `cargo test --bin a37` to test your implementation
 
+use std::convert::TryFrom;
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+enum RgbError {
+    #[error("hex colors must being with a hash (#)")]
+    MissingHash,
+    #[error("Failed to parse gex digit: {0}")]
+    ParseError(#[from] std::num::ParseIntError),
+    #[error("The string needs to be in the format #XXXXXX where X is a valid hexidecimal digit")]
+    LengthError,
+}
+
 #[derive(Debug, Eq, PartialEq)]
 struct Rgb(u8, u8, u8);
+
+impl TryFrom<&str> for Rgb {
+    type Error = RgbError;
+
+    fn try_from(hex: &str) -> Result<Self, Self::Error> {
+        if !hex.starts_with('#') {
+            return Err(RgbError::MissingHash);
+        }
+        if hex.len() != 7 {
+            return Err(RgbError::LengthError);
+        }
+
+        let (r, g, b) = (
+            u8::from_str_radix(&hex[1..=2], 16)?,
+            u8::from_str_radix(&hex[3..=4], 16)?,
+            u8::from_str_radix(&hex[5..=6], 16)?,
+        );
+
+        Ok(Self(r, g, b))
+    }
+}
 
 fn main() {
     // Use `cargo test --bin a37` to test your implementation

@@ -29,95 +29,188 @@
 // * A vector is the easiest way to store the bills at stage 1, but a
 //   hashmap will be easier to work with at stages 2 and 3.
 
-use std::io::{self, Write};
+use std::collections::HashMap;
+use std::io;
 
-#
-struct Bill {
-    payee: String,
-    amount: f32,
-}
-
-impl Bill {
-    fn new(payee: &str, amount: f32) -> Bill {
-        Bill {
-            payee: payee.to_owned(),
-            amount: amount,
-        }
+fn get_input() -> Option<String> {
+    let mut buffer = String::new();
+    while io::stdin().read_line(&mut buffer).is_err() {
+        print!("Please enter your data again");
     }
-
-    fn display(&self) {
-        println!("Payee: {} - Amount: {}", &self.payee, &self.amount);
+    let input = buffer.trim().to_owned();
+    if input.is_empty() {
+        None
+    } else {
+        Some(input)
     }
 }
 
-fn get_input() -> String {
-    let mut input = String::new();
-    match io::stdin().read_line(&mut input) {
-        Ok(_) => return input.trim().to_owned(),
-        Err(e) => {
-            println!("Unable to read input, {:?}", e);
-            return String::new();
-        }
-    }
-}
-
-fn display_menu() {
-    let menu = "
-    \t My Billing App
-    \t ==============
-    \t 1. Add new Bill
-    \t 2. Display Current Bills
-    \n
-    \t x. Exit
-    \n
-    \t Please select an option: ";
-
-    print!("{}", menu);
-    io::stdout().flush();
-}
-
-fn add_new_bill(bill_list: &mut Vec<Bill>) {
-    println!("Please enter Payee Name: ");
-    let payee = get_input();
-    let mut amount: f32 = 0.0;
+fn get_bill_amount() -> Option<f64> {
+    println!("Amount:");
     loop {
-        println!("Please enter amount owed: ");
-        match get_input().parse::<f32>() {
-            Ok(input) => {
-                amount = input;
-                break;
-            }
-            Err(_) => println!("Please enter a valid decimal number"),
+        let input = match get_input() {
+            Some(input) => input,
+            None => return None,
+        };
+        if input.is_empty() {
+            return None;
+        }
+        let parsed_input = input.parse::<f64>();
+        match parsed_input {
+            Ok(amount) => return Some(amount),
+            Err(_) => println!("Please enter a number."),
         }
     }
-    bill_list.push(Bill::new(&payee, amount));
-}
-
-fn display_bills(bill_list: &mut Vec<Bill>) {
-    for bill in bill_list {
-        bill.display();
-    }
-    println!("\n Press any key to continue");
-    let _ = get_input();
 }
 
 enum MainMenu {
     AddBill,
-    DisplayBill,
+    ViewBills,
+    RemoveBill,
+    UpdateBill,
+}
 
+impl MainMenu {
+    fn from_str(input: &str) -> Option<MainMenu> {
+        match input {
+            "1" => Some(Self::AddBill),
+            "2" => Some(Self::ViewBills),
+            "3" => Some(Self::RemoveBill),
+            "4" => Some(Self::UpdateBill),
+            _ => None,
+        }
+    }
+
+    fn show() {
+        println!(" == Bill Manager ==");
+        println!("1. Add Bill");
+        println!("2. View Bill");
+        println!("3. Remove Bill");
+        println!("4. Update Bill");
+        println!("\n");
+        println!("Please select an option: ");
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Bill {
+    payee: String,
+    amount: f64,
+}
+
+pub struct Bills {
+    inner: HashMap<String, Bill>,
+}
+
+impl Bills {
+    fn new() -> Self {
+        Self {
+            inner: HashMap::new(),
+        }
+    }
+
+    fn add(&mut self, bill: Bill) {
+        self.inner.insert(bill.payee.to_string(), bill);
+    }
+
+    fn get_all(&self) -> Vec<&Bill> {
+        self.inner.values().collect()
+    }
+
+    fn remove(&mut self, name: &str) -> bool {
+        self.inner.remove(name).is_some()
+    }
+
+    fn update(&mut self, name: &str, amount: f64) -> bool {
+        match self.inner.get_mut(name) {
+            Some(bill) => {
+                bill.amount = amount;
+                true
+            }
+            None => false,
+        }
+    }
+}
+
+mod menu {
+    use crate::{get_bill_amount, get_input, Bill, Bills};
+
+    pub fn add_bill(bills: &mut Bills) {
+        println!("Bill Payee:");
+        let payee = match get_input() {
+            Some(input) => input,
+            None => return,
+        };
+        let amount = match get_bill_amount() {
+            Some(amount) => amount,
+            None => return,
+        };
+        let bill = Bill { payee, amount };
+        bills.add(bill);
+        println!("Bills Added")
+    }
+
+    pub fn view_bills(bills: &Bills) {
+        for bill in bills.get_all() {
+            println!("{:?}", bill)
+        }
+    }
+
+    pub fn remove_bill(bills: &mut Bills) {
+        for bill in bills.get_all() {
+            println!("{:?}", bill)
+        }
+        println!("Enter payee name to remove:");
+        let name = match get_input() {
+            Some(name) => name,
+            None => return,
+        };
+        if bills.remove(&name) {
+            println!("Successfully removed bill!")
+        } else {
+            println!("Unable to remove bill! Please check payee name")
+        }
+    }
+
+    pub fn update_bill(bills: &mut Bills) {
+        for bill in bills.get_all() {
+            println!("{:?}", bill)
+        }
+        println!("Please enter the payee name to edit:");
+        let payee = match get_input() {
+            Some(input) => input,
+            None => return,
+        };
+        let amount = match get_bill_amount() {
+            Some(amount) => amount,
+            None => return,
+        };
+        if bills.update(&payee, amount) {
+            println!("Successfully updated bill")
+        } else {
+            println!("Bill not found.");
+        }
+    }
+}
+
+fn run_program() -> Option<()> {
+    // let mut bills: Vec<Bill> = vec![];
+    let mut bills = Bills::new();
+
+    loop {
+        MainMenu::show();
+        let input = get_input()?;
+        match MainMenu::from_str(&input) {
+            Some(MainMenu::AddBill) => menu::add_bill(&mut bills),
+            Some(MainMenu::ViewBills) => menu::view_bills(&bills),
+            Some(MainMenu::RemoveBill) => menu::remove_bill(&mut bills),
+            Some(MainMenu::UpdateBill) => menu::update_bill(&mut bills),
+            None => break,
+        }
+    }
+    None
 }
 
 fn main() {
-    let mut bills: Vec<Bill> = vec![];
-
-    loop {
-        display_menu();
-        let menu_choice = get_input();
-        match menu_choice.trim().to_lowercase().as_str() {
-            "1" => add_new_bill(&mut bills),
-            "2" => display_bills(&mut bills),
-            "x" => break,
-            _ => println!("\n Invalid Choice - Please try again"),
-        }
-    }
+    run_program();
 }
