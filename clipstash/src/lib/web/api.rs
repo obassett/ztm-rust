@@ -128,7 +128,7 @@ pub async fn new_api_key(database: &State<AppDatabase>) -> Result<Json<&str>, Ap
 pub async fn get_clip(
     shortcode: &str,
     database: &State<AppDatabase>,
-    cookie: &CookieJar<'_>,
+    cookies: &CookieJar<'_>,
     hit_counter: &State<HitCounter>,
     _api_key: ApiKey,
 ) -> Result<Json<crate::Clip>, ApiError> {
@@ -136,7 +136,7 @@ pub async fn get_clip(
 
     let req = service::ask::GetClip {
         shortcode: shortcode.into(),
-        password: cookie
+        password: cookies
             .get(PASSWORD_COOKIE)
             .map(|cookie| cookie.value())
             .map(|raw_password| Password::new(raw_password.to_string()).ok())
